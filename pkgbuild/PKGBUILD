@@ -1,0 +1,47 @@
+pkgname=xivastudio-meta-audio-config
+pkgver=1.0.0
+pkgrel=10
+epoch=
+pkgdesc="Configura o sistema para audio profissional."
+arch=('any')
+url="https://github.com/xivastudio/xivastudio-meta-audio-config"
+license=('GPL')
+# groups=()
+depends=('realtime-privileges' 'rtirq' 'rtapp' 'a52dec' 'faac' 'faad2' 'flac' 'jasper' 'lame' 'libdca' 'libdv' 'libmad' 'libmpeg2' 'libtheora' 'libvorbis' 'libxv' 'opus' 'wavpack' 'x264' 'xvidcore')
+# makedepends=()
+# checkdepends=()
+# optdepends=()
+# provides=()
+conflicts=('pipewire-biglinux-config-git' 'biglinux-meta-audio-config')
+#replaces=()
+#backup=()
+# options=()
+install=post.install
+# changelog=
+source=("git+https://github.com/xivastudio/xivastudio-meta-audio-config.git")
+#         "$pkgname-$pkgver.patch")
+# noextract=()
+md5sums=(skip)
+# validpgpkeys=()
+
+# prepare() {
+# 	cd "$pkgname-$pkgver"
+# 	patch -p1 -i "$srcdir/$pkgname-$pkgver.patch"
+# }
+# 
+# build() {
+# 	cd "$pkgname-$pkgver"
+# 	./configure --prefix=/usr
+# 	make
+# }
+# 
+# check() {
+# 	cd "$pkgname-$pkgver"
+# 	make -k check
+# }
+# 
+package() {
+    cp -r "${srcdir}/xivastudio-meta-audio-config/etc/" "${pkgdir}/"
+    cp -r "${srcdir}/xivastudio-meta-audio-config/usr/" "${pkgdir}/"
+}
+
