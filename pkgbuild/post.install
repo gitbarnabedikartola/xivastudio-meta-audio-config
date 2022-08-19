@@ -17,8 +17,6 @@ who=$(who | awk '{ print $1 }' | head -n 1)
 if [ -n "$(getent group | grep realtime)" ];then
     usermod -a -G realtime $who
 else
-ls -lh
-sleep 10
 echo '
 users=$(ls /home)
 for i in $users; do 
