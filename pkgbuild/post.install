@@ -22,7 +22,7 @@ users=$(ls /home)
 for i in $users; do 
 	if [ -z "$(groups $i | grep realtime)" ]; then
 		usermod -a -G realtime $i
-	if
+	fi
 done' | tee -a /usr/bin/big-first-boot
 fi
 usermod -a -G video $who

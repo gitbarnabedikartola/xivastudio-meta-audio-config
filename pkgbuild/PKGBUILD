@@ -1,6 +1,6 @@
 pkgname=xivastudio-meta-audio-config
 pkgver=1.00
-pkgrel=4
+pkgrel=5
 arch=('any')
 license=('GPL')
 depends=('realtime-privileges' 'rtirq' 'rtapp' 'a52dec' 'faac' 'faad2' 'flac' 'jasper' 'lame' 'libdca' 'libdv' 'libmad' 'libmpeg2' 'libtheora' 'libvorbis' 'libxv' 'opus' 'wavpack' 'x264' 'xvidcore')
