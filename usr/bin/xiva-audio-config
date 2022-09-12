@@ -7,3 +7,120 @@ echo 2048 > /proc/sys/dev/hpet/max-user-freq
 #configurar o swapness para 10
 sysctl vm.swappiness=10
 sysctl vm.vfs_cache_pressure=100
+
+#verificar se precisa dar update no grub
+grubupdate=0
+##se o processador for intel desativar o pstate
+#verificar se o processador é intel
+cpu=$(lscpu | grep -i intel)
+#verificar se o pstate está ativo
+pstate=$(cat /etc/default/grub | grep intel_pstate=disable)
+#se o processador for intel and o pstate tiver ativo
+if [ -n "$cpu" -a -z "$pstate" ]; then
+	#desativar o pstate
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
+	#update-grub
+	grubupdate=$[$grubupdate+1]
+fi
+##desativar o mitigations
+mitigations=$(cat /etc/default/grub | grep mitigations=off)
+#se o mitigations não estiver em off
+if [ -z "$mitigations" ]; then
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ mitigations=off"/2' /etc/default/grub
+	#update-grub
+	grubupdate=$[$grubupdate+1]
+fi
+#se o clearcpuid não estiver incluir
+clearcpuid=$(cat /etc/default/grub | grep clearcpuid=514)
+if [ -z "$clearcpuid" ]; then
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ clearcpuid=514"/2' /etc/default/grub
+	#update-grub
+	grubupdate=$[$grubupdate+1]
+fi
+#se o nowatchdog não estiver incluir
+nowatchdog=$(cat /etc/default/grub | grep nowatchdog)
+if [ -z "$nowatchdog" ]; then
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ nowatchdog"/2' /etc/default/grub
+	#update-grub
+	grubupdate=$[$grubupdate+1]
+fi
+#se o nosoftlockup não estiver incluir
+nosoftlockup=$(cat /etc/default/grub | grep nosoftlockup)
+if [ -z "$nosoftlockup" ]; then
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ nosoftlockup"/2' /etc/default/grub
+	#update-grub
+	grubupdate=$[$grubupdate+1]
+fi
+#se o audit não estiver incluir
+audit=$(cat /etc/default/grub | grep audit)
+if [ -z "$audit" ]; then
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ audit=0"/2' /etc/default/grub
+	#update-grub
+	grubupdate=$[$grubupdate+1]
+fi
+#se o skewtick não estiver incluir
+skewtick=$(cat /etc/default/grub | grep skew_tick=1)
+if [ -z "$skewtick" ]; then
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ skew_tick=1"/2' /etc/default/grub
+	#update-grub
+	grubupdate=$[$grubupdate+1]
+fi
+#se o threadirqs não estiver incluir
+threadirqs=$(cat /etc/default/grub | grep threadirqs)
+if [ -z "$threadirqs" ]; then
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ threadirqs"/2' /etc/default/grub
+	#update-grub
+	grubupdate=$[$grubupdate+1]
+fi
+#executar update do grub se for necessario
+if [ "$grubupdate" -gt "0" ]; then 
+    update-grub
+fi
+
+#libera memoria pra audio
+if [ -z "$(grep 'rtprio     95' /etc/security/limits.conf)" ]; then
+    echo "@audio   -  rtprio     95" | tee -a /etc/security/limits.conf
+fi
+if [ -z "$(grep 'memlock    unlimited' /etc/security/limits.conf)" ]; then 
+    echo "@audio   -  memlock    unlimited" | tee -a /etc/security/limits.conf
+
+#PAM-enabled login
+if [ -z "$(grep pam_limits.so /etc/pam.d/crond)" ]; then
+    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/crond
+fi
+if [ -z "$(grep pam_limits.so /etc/pam.d/login)" ]; then
+    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/login
+fi
+if [ -z "$(grep pam_limits.so /etc/pam.d/polkit-1)" ]; then
+    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/polkit-1
+fi
+if [ -z "$(grep pam_limits.so /etc/pam.d/system-auth)" ]; then
+    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/system-auth
+fi
+if [ -z "$(grep pam_limits.so /etc/pam.d/system-services)" ]; then
+    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/system-services
+fi
+
+##adicionar usuario aos grupos realtime, video e audio
+#descobrir o nome do(s) usuario(s)
+users=$(ls /home)
+for who in $users; do 
+    #adicinar usuario ao grupo realtime e video
+    if [ -z "$(getent group | grep realtime | grep $who)" ];then
+        usermod -a -G realtime $who
+    fi
+    if [ -z "$(getent group | grep video | grep $who)" ];then
+        usermod -a -G video $who
+    fi
+    if [ -z "$(getent group | grep audio | grep $who)" ];then
+        usermod -a -G audio $who
+    fi
+done
+
+#baixar a latencia das placas de audio PCI internas
+for i in $(lspci | grep -i audio | awk '{print $1}'); do 
+    setpci -v -s $i latency_timer=ff
+done
+
+udevadm control --reload-rules
+udevadm trigger

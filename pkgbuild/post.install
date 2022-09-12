@@ -102,14 +102,11 @@ cpu=$(lscpu | grep -i intel)
 #verificar se o pstate está ativo
 pstate=$(cat /etc/default/grub | grep intel_pstate=disable)
 
-#se o processador for intel
-if [ -n "$cpu" ]; then
-	#se o pstate tiver ativo
-	if [ -z "$pstate" ]; then
-		#desativar o pstate
-		sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
-		#update-grub
-	fi
+#se o processador for intel and o pstate tiver ativo
+if [ -n "$cpu" -a -n "$pstate" ]; then
+	#desativar o pstate
+	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
+	#update-grub
 fi
 
 ##desativar o mitigations
