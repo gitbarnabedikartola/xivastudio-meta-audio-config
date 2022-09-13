@@ -11,11 +11,6 @@ source=("git+https://github.com/xivastudio/xivastudio-meta-audio-config.git")
 md5sums=(SKIP)
 install=post.install
 
-pkgver() {
-    cd "$srcdir/${pkgname%}"
-    printf "%s" "$(date +%Y.%m.%d)"
-}
-
 package() {
     cp -r "${srcdir}/xivastudio-meta-audio-config/etc/" "${pkgdir}/"
     cp -r "${srcdir}/xivastudio-meta-audio-config/usr/" "${pkgdir}/"

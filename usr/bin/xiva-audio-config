@@ -83,7 +83,8 @@ if [ -z "$(grep 'rtprio     95' /etc/security/limits.conf)" ]; then
 fi
 if [ -z "$(grep 'memlock    unlimited' /etc/security/limits.conf)" ]; then 
     echo "@audio   -  memlock    unlimited" | tee -a /etc/security/limits.conf
-
+fi
+    
 #PAM-enabled login
 if [ -z "$(grep pam_limits.so /etc/pam.d/crond)" ]; then
     echo "session   required    pam_limits.so" | tee -a /etc/pam.d/crond
