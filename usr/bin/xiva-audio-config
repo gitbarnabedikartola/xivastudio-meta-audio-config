@@ -84,6 +84,12 @@ fi
 if [ -z "$(grep 'memlock    unlimited' /etc/security/limits.conf)" ]; then 
     echo "@audio   -  memlock    unlimited" | tee -a /etc/security/limits.conf
 fi
+if [ -e /usr/share/pipewire/jack.conf -a -n "$(grep rt.prio /usr/share/pipewire/jack.conf | grep \#)" ]; then
+    sed -i '/rt.prio/s/#//' /usr/share/pipewire/jack.conf
+fi
+if [ -e /usr/share/pipewire/jack.conf -a -z "$(grep rt.prio /usr/share/pipewire/jack.conf | grep 95)" ]; then
+    sed -i '/rt.prio/s/rt.prio.*/rt.prio      = 95/' /usr/share/pipewire/jack.conf
+fi
     
 #PAM-enabled login
 if [ -z "$(grep pam_limits.so /etc/pam.d/crond)" ]; then
