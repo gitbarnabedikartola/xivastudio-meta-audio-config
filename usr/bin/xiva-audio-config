@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# LOG_FILE=/var/log/xiva-audio-conf-$(date +%Y-%m-%d_%H-%M).log
+# exec > >(tee -a ${LOG_FILE}) 2>&1
+
 #Aumentar a frequência de interrupção RTC
 echo 2048 > /sys/class/rtc/rtc0/max_user_freq
 echo 2048 > /proc/sys/dev/hpet/max-user-freq
@@ -10,17 +13,51 @@ sysctl vm.vfs_cache_pressure=100
 
 #verificar se precisa dar update no grub
 grubupdate=0
-##se o processador for intel desativar o pstate
-#verificar se o processador é intel
-cpu=$(lscpu | grep -i intel)
-#verificar se o pstate está ativo
-pstate=$(cat /etc/default/grub | grep intel_pstate=disable)
-#se o processador for intel and o pstate tiver ativo
-if [ -n "$cpu" -a -z "$pstate" ]; then
-	#desativar o pstate
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
-	#update-grub
-	grubupdate=$[$grubupdate+1]
+#se o processador for intel and o pstate estiver ativo
+cpuVendor=$(LANG=c cat /proc/cpuinfo | grep vendor | awk '{print $3}' | head -n1)
+if [ -n "$(echo $cpuVendor | grep -i intel)" ];then
+	intelPstate=$(grep -o '[^[:space:]]*intel_pstate[^[:space:]]*' /etc/default/grub | cut -d "=" -f2 | sed 's/\"//')
+	#se tiver 2 entradas com intel_pstate, remover ambas
+	if [ "$(echo $intelPstate | wc -w)" -gt "1" ];then
+		intelPstate=$(grep -o '[^[:space:]]*intel_pstate[^[:space:]]*' /etc/default/grub | sed 's/\"//')
+		for i in ${intelPstate[@]}; do
+			sed -i "s/ $i//" /etc/default/grub
+		done
+		intelPstate=
+	fi
+	#se não tiver nenhum intel_pstate
+	if [ -z "$intelPstate" ]; then
+		# sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
+		sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=passive"/2' /etc/default/grub
+		grubupdate=$[$grubupdate+1]
+	#se ja tiver mas for diferente de disble
+	# elif [ "$intelPstate" != "disable" ]; then
+	elif [ "$intelPstate" != "passive" ]; then
+		# sed -i "s/intel_pstate=$intelPstate/intel_pstate=disable/" /etc/default/grub
+		sed -i "s/intel_pstate=$intelPstate/intel_pstate=passive/" /etc/default/grub
+		grubupdate=$[$grubupdate+1]
+	fi
+fi
+#se o processador for AMD e o pstate não estiver ativo
+if [ -n "$(echo $cpuVendor | grep -i amd)" ];then
+	amdPstate=$(grep -o '[^[:space:]]*amd_pstate[^[:space:]]*' /etc/default/grub | cut -d "=" -f2 | sed 's/\"//')
+	#se tiver 2 entradas com amd_pstate, remover ambas
+	if [ "$(echo $amdPstate | wc -w)" -gt "1" ];then
+		amdPstate=$(grep -o '[^[:space:]]*amd_pstate[^[:space:]]*' /etc/default/grub | sed 's/\"//')
+		for i in ${amdPstate[@]}; do
+			sed -i "s/ $i//" /etc/default/grub
+		done
+		amdPstate=
+	fi
+	#se não tiver nenhum amd_pstate
+	if [ -z "$amdPstate" ]; then
+		sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ amd_pstate=passive"/2' /etc/default/grub
+		grubupdate=$[$grubupdate+1]
+	#se ja tiver mas for diferente de ativado
+	elif [ "$amdPstate" != "passive" ]; then
+		sed -i "s/amd_pstate=$amdPstate/amd_pstate=passive/" /etc/default/grub
+		grubupdate=$[$grubupdate+1]
+	fi
 fi
 ##desativar o mitigations
 mitigations=$(cat /etc/default/grub | grep mitigations=off)
