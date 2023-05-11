@@ -52,8 +52,8 @@ usermod -a -G audio $who
 #    sed -i '/fs.inotify.max_user_watches/s/=.*$/= 600000/' /etc/sysctl.d/90-max_user_watches.conf
 #fi
 
-#baixar a latencia das placas de audio PCI internas
-for i in $(lspci | grep -i audio | awk '{print $1}'); do setpci -v -s $i latency_timer=ff; done
+# #baixar a latencia das placas de audio PCI internas
+# for i in $(lspci | grep -i audio | awk '{print $1}'); do setpci -v -s $i latency_timer=ff; done
 
 #if [ ! -e /etc/security/limits.d/audio.conf ];then
 #    touch /etc/security/limits.d/audio.conf
@@ -78,91 +78,90 @@ for i in $(lspci | grep -i audio | awk '{print $1}'); do setpci -v -s $i latency
 
 ### até aqui ###
 
-#PAM-enabled login
-if [ -z "$(grep pam_limits.so /etc/pam.d/crond)" ]; then
-    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/crond
-fi
-if [ -z "$(grep pam_limits.so /etc/pam.d/login)" ]; then
-    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/login
-fi
-if [ -z "$(grep pam_limits.so /etc/pam.d/polkit-1)" ]; then
-    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/polkit-1
-fi
-if [ -z "$(grep pam_limits.so /etc/pam.d/system-auth)" ]; then
-    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/system-auth
-fi
-if [ -z "$(grep pam_limits.so /etc/pam.d/system-services)" ]; then
-    echo "session   required    pam_limits.so" | tee -a /etc/pam.d/system-services
-fi
-
+# #PAM-enabled login
+# if [ -z "$(grep pam_limits.so /etc/pam.d/crond)" ]; then
+#     echo "session   required    pam_limits.so" | tee -a /etc/pam.d/crond
+# fi
+# if [ -z "$(grep pam_limits.so /etc/pam.d/login)" ]; then
+#     echo "session   required    pam_limits.so" | tee -a /etc/pam.d/login
+# fi
+# if [ -z "$(grep pam_limits.so /etc/pam.d/polkit-1)" ]; then
+#     echo "session   required    pam_limits.so" | tee -a /etc/pam.d/polkit-1
+# fi
+# if [ -z "$(grep pam_limits.so /etc/pam.d/system-auth)" ]; then
+#     echo "session   required    pam_limits.so" | tee -a /etc/pam.d/system-auth
+# fi
+# if [ -z "$(grep pam_limits.so /etc/pam.d/system-services)" ]; then
+#     echo "session   required    pam_limits.so" | tee -a /etc/pam.d/system-services
+# fi
 
 ##se o processador for intel desativar o pstate
 #verificar se o processador é intel
-cpu=$(lscpu | grep -i intel)
+# cpu=$(lscpu | grep -i intel)
 #verificar se o pstate está ativo
-pstate=$(cat /etc/default/grub | grep intel_pstate=disable)
+# pstate=$(cat /etc/default/grub | grep intel_pstate=disable)
 
-#se o processador for intel and o pstate tiver ativo
-if [ -n "$cpu" -a -n "$pstate" ]; then
-	#desativar o pstate
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
-	#update-grub
-fi
+# #se o processador for intel and o pstate tiver ativo
+# if [ -n "$cpu" -a -n "$pstate" ]; then
+# 	#desativar o pstate
+# 	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
+# 	#update-grub
+# fi
 
-##desativar o mitigations
-mitigations=$(cat /etc/default/grub | grep mitigations=off)
-#se o mitigations não estiver em off
-if [ -z "$mitigations" ]; then
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ mitigations=off"/2' /etc/default/grub
-	#update-grub
-fi
+# ##desativar o mitigations
+# mitigations=$(cat /etc/default/grub | grep mitigations=off)
+# #se o mitigations não estiver em off
+# if [ -z "$mitigations" ]; then
+# 	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ mitigations=off"/2' /etc/default/grub
+# 	#update-grub
+# fi
 
-clearcpuid=$(cat /etc/default/grub | grep clearcpuid=514)
-#se o clearcpuid não estiver
-if [ -z "$clearcpuid" ]; then
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ clearcpuid=514"/2' /etc/default/grub
-	#update-grub
-fi
+# clearcpuid=$(cat /etc/default/grub | grep clearcpuid=514)
+# #se o clearcpuid não estiver
+# if [ -z "$clearcpuid" ]; then
+# 	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ clearcpuid=514"/2' /etc/default/grub
+# 	#update-grub
+# fi
 
-nowatchdog=$(cat /etc/default/grub | grep nowatchdog)
-#se o nowatchdog não estiver
-if [ -z "$nowatchdog" ]; then
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ nowatchdog"/2' /etc/default/grub
-	#update-grub
-fi
+# nowatchdog=$(cat /etc/default/grub | grep nowatchdog)
+# #se o nowatchdog não estiver
+# if [ -z "$nowatchdog" ]; then
+# 	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ nowatchdog"/2' /etc/default/grub
+# 	#update-grub
+# fi
 
-nosoftlockup=$(cat /etc/default/grub | grep nosoftlockup)
-#se o nosoftlockup não estiver
-if [ -z "$nosoftlockup" ]; then
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ nosoftlockup"/2' /etc/default/grub
-	#update-grub
-fi
+# nosoftlockup=$(cat /etc/default/grub | grep nosoftlockup)
+# #se o nosoftlockup não estiver
+# if [ -z "$nosoftlockup" ]; then
+# 	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ nosoftlockup"/2' /etc/default/grub
+# 	#update-grub
+# fi
 
-audit=$(cat /etc/default/grub | grep audit)
-#se o audit não estiver
-if [ -z "$audit" ]; then
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ audit=0"/2' /etc/default/grub
-	#update-grub
-fi
+# audit=$(cat /etc/default/grub | grep audit)
+# #se o audit não estiver
+# if [ -z "$audit" ]; then
+# 	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ audit=0"/2' /etc/default/grub
+# 	#update-grub
+# fi
 
-skewtick=$(cat /etc/default/grub | grep skew_tick=1)
-#se o skewtick não estiver
-if [ -z "$skewtick" ]; then
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ skew_tick=1"/2' /etc/default/grub
-	#update-grub
-fi
+# skewtick=$(cat /etc/default/grub | grep skew_tick=1)
+# #se o skewtick não estiver
+# if [ -z "$skewtick" ]; then
+# 	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ skew_tick=1"/2' /etc/default/grub
+# 	#update-grub
+# fi
 
-threadirqs=$(cat /etc/default/grub | grep threadirqs)
-#se o threadirqs não estiver
-if [ -z "$threadirqs" ]; then
-	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ threadirqs"/2' /etc/default/grub
-	#update-grub
-fi
-update-grub
+# threadirqs=$(cat /etc/default/grub | grep threadirqs)
+# #se o threadirqs não estiver
+# if [ -z "$threadirqs" ]; then
+# 	sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ threadirqs"/2' /etc/default/grub
+# 	#update-grub
+# fi
+# update-grub
 
-systemctl start xiva-audio-config
-udevadm control --reload-rules
-udevadm trigger
+systemctl enable --now xiva-audio-config
+# udevadm control --reload-rules
+# udevadm trigger
 
 }
 
