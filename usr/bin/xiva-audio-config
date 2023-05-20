@@ -27,14 +27,14 @@ if [ -n "$(echo $cpuVendor | grep -i intel)" ];then
 	fi
 	#se não tiver nenhum intel_pstate
 	if [ -z "$intelPstate" ]; then
-		# sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
-		sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=passive"/2' /etc/default/grub
+		sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=disable"/2' /etc/default/grub
+		# sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/s/\"/ intel_pstate=passive"/2' /etc/default/grub
 		grubupdate=$[$grubupdate+1]
 	#se ja tiver mas for diferente de disble
 	# elif [ "$intelPstate" != "disable" ]; then
 	elif [ "$intelPstate" != "passive" ]; then
-		# sed -i "s/intel_pstate=$intelPstate/intel_pstate=disable/" /etc/default/grub
-		sed -i "s/intel_pstate=$intelPstate/intel_pstate=passive/" /etc/default/grub
+		sed -i "s/intel_pstate=$intelPstate/intel_pstate=disable/" /etc/default/grub
+		# sed -i "s/intel_pstate=$intelPstate/intel_pstate=passive/" /etc/default/grub
 		grubupdate=$[$grubupdate+1]
 	fi
 fi
